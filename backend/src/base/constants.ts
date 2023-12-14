@@ -1,6 +1,7 @@
 export abstract class DatabaseConstants {
   static readonly DATA_SOURCE = 'DATA_SOURCE';
   static readonly USER_REPOSITORY = 'USER_REPOSITORY';
+  static readonly TODO_REPOSITORY = 'TODO_REPOSITORY';
 }
 
 export abstract class SystemConfigConstants {
