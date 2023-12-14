@@ -5,7 +5,6 @@ function Login() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData.entries());
-    console.log(import.meta.env.VITE_API_URL);
 
     const email = data.email;
     const password = data.password;
@@ -18,10 +17,14 @@ function Login() {
       body: JSON.stringify({ email, password }),
     })
       .then((response) => {
-        console.log(response);
         return response.json();
       })
-      .then((data) => console.log(data));
+      .then((data) => {
+        if (data.access_token) {
+          localStorage.setItem("token", data.access_token);
+          window.location.href = "/";
+        }
+      });
   };
 
   return (
@@ -65,21 +68,6 @@ function Login() {
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <input
-            id="remember_me"
-            name="remember_me"
-            type="checkbox"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label
-            htmlFor="remember_me"
-            className="ml-2 block text-sm text-gray-900"
-          >
-            Remember me
-          </label>
-        </div>
-
         <div className="text-sm">
           <Link
             to="/auth/sign-up"

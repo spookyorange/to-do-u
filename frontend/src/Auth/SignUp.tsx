@@ -1,16 +1,15 @@
 import { Link } from "react-router-dom";
 
 function SignUp() {
-  const loginSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const signUpSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData.entries());
-    console.log(import.meta.env.VITE_API_URL);
 
     const email = data.email;
     const password = data.password;
 
-    fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+    fetch(`${import.meta.env.VITE_API_URL}/auth/sign-up`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -18,14 +17,18 @@ function SignUp() {
       body: JSON.stringify({ email, password }),
     })
       .then((response) => {
-        console.log(response);
         return response.json();
       })
-      .then((data) => console.log(data));
+      .then((data) => {
+        if (data.access_token) {
+          localStorage.setItem("token", data.access_token);
+          window.location.href = "/";
+        }
+      });
   };
 
   return (
-    <form className="space-y-6" onSubmit={loginSubmit}>
+    <form className="space-y-6" onSubmit={signUpSubmit}>
       <div>
         <label
           htmlFor="email"

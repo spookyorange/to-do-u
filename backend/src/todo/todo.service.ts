@@ -31,7 +31,7 @@ export class TodoService {
     const { user } = req;
 
     const todos = await this.todoRepository.find({
-      where: { user },
+      where: { user: { id: user.id } },
       skip: query.skip,
       take: query.take,
     });
@@ -43,7 +43,7 @@ export class TodoService {
     const { user } = req;
 
     const todo = await this.todoRepository.findOne({
-      where: { id, user },
+      where: { id, user: { id: user.id } },
     });
 
     if (!todo) {
@@ -63,7 +63,7 @@ export class TodoService {
     const { user } = req;
 
     const todo = await this.todoRepository.findOne({
-      where: { id, user },
+      where: { id, user: { id: user.id } },
     });
 
     if (!todo) {
@@ -84,7 +84,7 @@ export class TodoService {
     const { user } = req;
 
     const todo = await this.todoRepository.findOne({
-      where: { id, user },
+      where: { id, user: { id: user.id } },
     });
 
     if (!todo) {

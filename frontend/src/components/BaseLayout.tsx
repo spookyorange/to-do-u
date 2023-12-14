@@ -1,12 +1,7 @@
 import { Disclosure } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const navigation = [
-  { name: "Home", href: "/", current: false },
-  { name: "Login", href: "/auth/login", current: false },
-  { name: "Sign Up", href: "/auth/sign-up", current: false },
-];
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -15,6 +10,29 @@ function classNames(...classes: string[]) {
 export default function BaseLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [navigation, setNavigation] = useState([
+    { name: "Home", href: "/", current: false },
+    { name: "Login", href: "/auth/login", current: false },
+    { name: "Sign Up", href: "/auth/sign-up", current: false },
+  ]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setNavigation([
+        { name: "Home", href: "/", current: false },
+        { name: "Logout", href: "/auth/logout", current: false },
+      ]);
+    }
+  }, [isAuthenticated]);
+
   return (
     <div className="min-h-full">
       <Disclosure as="nav" className="bg-gray-800">
