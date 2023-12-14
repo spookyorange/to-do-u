@@ -11,7 +11,6 @@ async function bootstrap() {
     .setTitle('Todo-U API Documentation')
     .setDescription('The good stuff starts here!')
     .setVersion('1.0')
-    .addTag('cats')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
