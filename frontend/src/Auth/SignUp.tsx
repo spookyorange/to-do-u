@@ -1,6 +1,16 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import getCsrf from "../util/getCsrf";
 
 function SignUp() {
+  const [csrfToken, setCsrfToken] = useState<string>("");
+
+  useEffect(() => {
+    getCsrf().then((res) => {
+      setCsrfToken(res.csrfToken);
+    });
+  }, []);
+
   const signUpSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -13,8 +23,10 @@ function SignUp() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
       },
       body: JSON.stringify({ email, password }),
+      credentials: "include",
     })
       .then((response) => {
         return response.json();

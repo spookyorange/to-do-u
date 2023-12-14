@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import getCsrf from "../util/getCsrf";
 
 interface Todo {
   id: number;
@@ -12,6 +13,13 @@ function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [authenticated, setAuthenticated] = useState(false);
   const [todosLoaded, setTodosLoaded] = useState(false);
+  const [csrfToken, setCsrfToken] = useState<string>("");
+
+  useEffect(() => {
+    getCsrf().then((res) => {
+      setCsrfToken(res.csrfToken);
+    });
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -25,10 +33,11 @@ function Home() {
       fetch(`${import.meta.env.VITE_API_URL}/todo`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "X-CSRF-Token": csrfToken,
         },
+        credentials: "include",
       })
         .then((response) => {
-          console.log(response);
           return response.json();
         })
         .then((data) => {
@@ -73,12 +82,14 @@ function Home() {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "X-CSRF-Token": csrfToken,
       },
       body: JSON.stringify({
         title: titleOfTodo,
         completed: false,
         description,
       }),
+      credentials: "include",
     })
       .then((response) => {
         return response.json();
@@ -94,7 +105,9 @@ function Home() {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "X-CSRF-Token": csrfToken,
       },
+      credentials: "include",
     });
   };
 
@@ -104,10 +117,12 @@ function Home() {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "X-CSRF-Token": csrfToken,
       },
       body: JSON.stringify({
         completed: true,
       }),
+      credentials: "include",
     });
   };
 
@@ -117,10 +132,12 @@ function Home() {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "X-CSRF-Token": csrfToken,
       },
       body: JSON.stringify({
         completed: false,
       }),
+      credentials: "include",
     });
   };
 
@@ -216,6 +233,7 @@ function Home() {
                               deleteTask={deleteTask}
                               completeTask={completeTask}
                               uncompleteTask={uncompleteTask}
+                              csrfToken={csrfToken}
                             />
                           );
                         })}
@@ -246,6 +264,7 @@ function TodoItem(
     deleteTask: (id: number) => void;
     completeTask: (id: number) => void;
     uncompleteTask: (id: number) => void;
+    csrfToken: string;
   }>
 ) {
   const [edit, setEdit] = useState(false);
@@ -266,6 +285,7 @@ function TodoItem(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "X-CSRF-Token": props.csrfToken,
       },
       body: JSON.stringify({
         title: (
@@ -275,6 +295,7 @@ function TodoItem(
           document.getElementById(`description-${props.id}`) as HTMLInputElement
         ).value,
       }),
+      credentials: "include",
     }).then(() => {
       setTitle(
         (document.getElementById(`titleOfTodo-${props.id}`) as HTMLInputElement)
