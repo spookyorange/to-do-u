@@ -143,7 +143,7 @@ function Home() {
                   <form className="space-y-6" onSubmit={createTask}>
                     <div>
                       <label
-                        htmlFor="title"
+                        htmlFor="titleOfTodo"
                         className="block text-sm font-medium text-gray-700"
                       >
                         Title
@@ -248,13 +248,120 @@ function TodoItem(
     uncompleteTask: (id: number) => void;
   }>
 ) {
+  const [edit, setEdit] = useState(false);
+  const [title, setTitle] = useState(props.title);
+  const [description, setDescription] = useState(props.description);
+
+  const editModeOn = () => {
+    setEdit(true);
+  };
+
+  const editModeOff = () => {
+    setEdit(false);
+  };
+
+  const saveEdit = () => {
+    fetch(`${import.meta.env.VITE_API_URL}/todo/${props.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        title: (
+          document.getElementById(`titleOfTodo-${props.id}`) as HTMLInputElement
+        ).value,
+        description: (
+          document.getElementById(`description-${props.id}`) as HTMLInputElement
+        ).value,
+      }),
+    }).then((e) => {
+      setTitle(
+        (document.getElementById(`titleOfTodo-${props.id}`) as HTMLInputElement)
+          .value
+      );
+      setDescription(
+        (document.getElementById(`description-${props.id}`) as HTMLInputElement)
+          .value
+      );
+      setEdit(false);
+    });
+  };
+
   return (
     <li className="border-2 border-black space-y-2 p-4">
-      <div>
-        <h5 className="font-semibold text-xl">{props.title}</h5>
-        {props.description}
-      </div>
+      {!edit ? (
+        <div>
+          <h5 className="font-semibold text-xl">{props.title}</h5>
+          {props.description}
+        </div>
+      ) : (
+        <form>
+          <div>
+            <label
+              htmlFor={`titleOfTodo-${props.id}`}
+              className="block text-sm font-medium text-gray-700"
+            >
+              Title
+            </label>
+            <div className="mt-1">
+              <input
+                id={`titleOfTodo-${props.id}`}
+                name={`titleOfTodo-${props.id}`}
+                type="text"
+                autoComplete="title"
+                required
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                defaultValue={title}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor={`description-${props.id}`}
+              className="block text-sm font-medium text-gray-700"
+            >
+              Description
+            </label>
+            <div className="mt-1">
+              <input
+                id={`description-${props.id}`}
+                name={`description-${props.id}`}
+                type="text"
+                autoComplete="description"
+                required
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                defaultValue={description}
+              />
+            </div>
+          </div>
+        </form>
+      )}
       <div className="space-x-2">
+        {!edit ? (
+          <button
+            onClick={editModeOn}
+            className="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Edit
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={saveEdit}
+              className="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Save
+            </button>
+            <button
+              onClick={editModeOff}
+              className="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Cancel
+            </button>
+          </>
+        )}
         {props.completed ? (
           <button
             onClick={() => {
