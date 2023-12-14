@@ -5,12 +5,14 @@ import { UserPayload } from 'src/base/authentication/userPayload';
 import { DatabaseConstants } from 'src/base/constants';
 import { Repository } from 'typeorm';
 import { Todo } from './entities/todo.entity';
+import { TodoGateway } from './todo.gateway';
 
 @Injectable()
 export class TodoService {
   constructor(
     @Inject(DatabaseConstants.TODO_REPOSITORY)
     private todoRepository: Repository<Todo>,
+    private todoGateway: TodoGateway,
   ) {}
 
   async create(createTodoDto: CreateTodoDto, req: { user: UserPayload }) {
@@ -19,6 +21,11 @@ export class TodoService {
     const todo = await this.todoRepository.save({
       ...createTodoDto,
       user,
+    });
+
+    this.todoGateway.handleMessage(user.id, 'created', {
+      id: todo.id,
+      ...createTodoDto,
     });
 
     return todo;
@@ -77,6 +84,13 @@ export class TodoService {
       ...updateTodoDto,
     });
 
+    const toRetrieveTodo = {
+      ...updatedTodo,
+      user: undefined,
+    };
+
+    this.todoGateway.handleMessage(user.id, 'updated', toRetrieveTodo);
+
     return updatedTodo;
   }
 
@@ -94,6 +108,8 @@ export class TodoService {
     }
 
     await this.todoRepository.delete({ id });
+
+    this.todoGateway.handleMessage(user.id, 'deleted', { id });
 
     return todo;
   }

@@ -3,6 +3,7 @@ import { UserService } from '../user/user.service';
 import comparePasswords from 'src/base/encryption/comparePasswords';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -31,5 +32,14 @@ export class AuthService {
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
+  }
+
+  async getUserFromToken(token: string): Promise<User> {
+    try {
+      const payload = await this.jwtService.verifyAsync(token);
+      return this.userService.getOneByEmail(payload.email);
+    } catch (e) {
+      console.warn('e', e);
+    }
   }
 }
