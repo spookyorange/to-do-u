@@ -275,7 +275,7 @@ function TodoItem(
           document.getElementById(`description-${props.id}`) as HTMLInputElement
         ).value,
       }),
-    }).then((e) => {
+    }).then(() => {
       setTitle(
         (document.getElementById(`titleOfTodo-${props.id}`) as HTMLInputElement)
           .value
