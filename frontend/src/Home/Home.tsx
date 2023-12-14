@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+interface Todo {
+  id: number;
+  title: string;
+  description: string;
+  completed: boolean;
+}
 
 function Home() {
-  const [todos, setTodos] = useState<
-    { id: number; title: string; description: string; completed: boolean }[]
-  >([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [authenticated, setAuthenticated] = useState(false);
   const [todosLoaded, setTodosLoaded] = useState(false);
 
@@ -32,6 +38,31 @@ function Home() {
     }
   }, [authenticated]);
 
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_API_URL, {
+      query: {
+        user_jwt: localStorage.getItem("token"),
+      },
+    });
+
+    socket.on("created", (todoFromSocket: Todo) => {
+      setTodos((todos) => [...todos, todoFromSocket]);
+    });
+    socket.on("deleted", (idObject: { id: number }) => {
+      setTodos((todos) => todos.filter((todo) => todo.id !== idObject.id));
+    });
+    socket.on("updated", (todoFromSocket: Todo) => {
+      setTodos((todos) =>
+        todos.map((todo) => {
+          if (todoFromSocket.id === todo.id) {
+            todo = todoFromSocket;
+          }
+          return todo;
+        })
+      );
+    });
+  }, []);
+
   const createTask = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const titleOfTodo = (event.target as HTMLFormElement).titleOfTodo.value;
@@ -52,12 +83,9 @@ function Home() {
       .then((response) => {
         return response.json();
       })
-      .then((data) => {
-        // clear
-        console.log(data);
+      .then(() => {
         (event.target as HTMLFormElement).titleOfTodo.value = "";
         (event.target as HTMLFormElement).description.value = "";
-        setTodos([...todos, data]);
       });
   };
 
@@ -67,10 +95,6 @@ function Home() {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-    }).then((response) => {
-      if (response.status === 200) {
-        setTodos(todos.filter((todo) => todo.id !== id));
-      }
     });
   };
 
@@ -84,17 +108,6 @@ function Home() {
       body: JSON.stringify({
         completed: true,
       }),
-    }).then((response) => {
-      if (response.status === 200) {
-        setTodos(
-          todos.map((todo) => {
-            if (todo.id === id) {
-              todo.completed = true;
-            }
-            return todo;
-          })
-        );
-      }
     });
   };
 
@@ -108,17 +121,6 @@ function Home() {
       body: JSON.stringify({
         completed: false,
       }),
-    }).then((response) => {
-      if (response.status === 200) {
-        setTodos(
-          todos.map((todo) => {
-            if (todo.id === id) {
-              todo.completed = false;
-            }
-            return todo;
-          })
-        );
-      }
     });
   };
 

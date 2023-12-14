@@ -25,8 +25,6 @@ export class TodoGateway implements OnGatewayConnection, OnGatewayDisconnect {
       id: string;
     },
   ) {
-    console.warn('user_jwt', query.handshake.query.user_jwt);
-
     const user = await this.authService.getUserFromToken(
       query.handshake.query.user_jwt,
     );
@@ -36,11 +34,6 @@ export class TodoGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } else {
       this.cumulativeUsersAndTheirSockets[user.id] = query.id;
     }
-
-    console.warn(
-      'this.cumulativeUsersAndTheirSockets',
-      this.cumulativeUsersAndTheirSockets,
-    );
 
     this.users++;
 
