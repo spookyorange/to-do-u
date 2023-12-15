@@ -1,0 +1,51 @@
+version: '3.1'
+
+services:
+  pg:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: spookyorange
+      # change the password to the one you want
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: todou
+    volumes:
+      # change the path to your own path
+      - ./pg/data:/var/lib/postgresql/data
+    networks:
+      - orange
+    # ports:
+    #   - "5432:5432"
+
+  todou-api:
+    build: ./backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # change the database password to the one you set above
+      - DATABASE_URL=postgres://spookyorange:postgres@pg:5432/todou
+      - SALT_ROUNDS=10
+      # change secret using: require('crypto').randomBytes(64).toString('hex')
+      - JWT_SECRET=secret
+      - JWT_EXPIRES_IN=1d
+    networks:
+      - orange
+    depends_on:
+      - pg
+
+  todou-web:
+    build: ./frontend
+    restart: always
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    ports:
+    # change the port to the one you want
+      - "5200:4173"
+    networks:
+      - orange
+    depends_on:
+      - todou-api
+
+networks:
+  orange:
