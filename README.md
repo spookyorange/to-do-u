@@ -1,4 +1,4 @@
-Todou, the ultimate todo list manager
+# Todou, the ultimate todo list manager
 
 ## Installation
 
